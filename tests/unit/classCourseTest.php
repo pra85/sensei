@@ -2,7 +2,7 @@
 
 class Sensei_Class_Course_Test extends  \Codeception\TestCase\Test {
 
-    protected $backupGlobalsBlacklist = array('app','wp_filter');
+    protected $backupGlobalsBlacklist = false;
     /**
      * Constructor function
      */
