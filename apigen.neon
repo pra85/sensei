@@ -1,6 +1,6 @@
 source: ./
 
-destination: sensei-reference
+destination: sensei-apidocs
 
 templateConfig: apigen/theme-sensei/config.neon
 
@@ -24,13 +24,13 @@ exclude:
 charset: [UTF-8]
 
 # elements with this name prefix will be considered as the "main project" (the rest will be considered as libraries)
-main: WC
+main: sensei
 
 # title of generated documentation
-title: WooCommerce
+title: Sensei
 
 # base url used for sitemap (useful for public doc)
-baseUrl: http://docs.woothemes.com/sensei-reference/
+baseUrl: http://docs.woothemes.com/sensei-apidocs
 
 # choose ApiGen template theme
 templateTheme: default

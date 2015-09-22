@@ -1,8 +1,10 @@
 <?php
 /**
- * Generate documentation for hooks in WC
+ * Generate documentation for hooks in Sensei
+ *
+ * Forked from the WooCommerce project: https://github.com/woothemes/woocommerce
  */
-class WC_HookFinder {
+class Sensei_HookFinder {
 	private static $current_file           = '';
 	private static $files_to_scan          = array();
 	private static $pattern_custom_actions = '/do_action(.*?);/i';
@@ -45,11 +47,11 @@ class WC_HookFinder {
 
 	private static function get_hook_link( $hook, $details = array() ) {
 		if ( ! empty( $details['class'] ) ) {
-			$link = 'http://docs.woothemes.com/wc-apidocs/source-class-' . $details['class'] . '.html#' . $details['line'];
+			$link = 'http://docs.woothemes.com/sensei-apidocs/source-class-' . $details['class'] . '.html#' . $details['line'];
 		} elseif ( ! empty( $details['function'] ) ) {
-			$link = 'http://docs.woothemes.com/wc-apidocs/source-function-' . $details['function'] . '.html#' . $details['line'];
+			$link = 'http://docs.woothemes.com/sensei-apidocs/source-function-' . $details['function'] . '.html#' . $details['line'];
 		} else {
-			$link = 'https://github.com/woothemes/woocommerce/search?utf8=%E2%9C%93&q=' . $hook;
+			$link = 'https://github.com/woothemes/sensei/search?utf8=%E2%9C%93&q=' . $hook;
 		}
 
 		return '<a href="' . $link . '">' . $hook . '</a>';
@@ -180,4 +182,4 @@ class WC_HookFinder {
 	}
 }
 
-WC_HookFinder::process_hooks();
+Sensei_HookFinder::process_hooks();
