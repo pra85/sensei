@@ -63,7 +63,8 @@ class Sensei_Autoloader {
             /**
              * Admin
              */
-            'Sensei_Welcome'=> 'admin/class-sensei-welcome.php' ,
+            'Sensei_Welcome'            => 'admin/class-sensei-welcome.php',
+            'Sensei_Permalink_Settings' => 'admin/class-sensei-permalink-settings.php' ,
 
             /**
              * Shortcodes

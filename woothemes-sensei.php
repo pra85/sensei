@@ -70,6 +70,9 @@ Domain path: /lang/
 
         require_once( 'includes/hooks/template-hooks.php' );
 
+    }else{
+
+        require_once( 'includes/hooks/admin-hooks.php' );
     }
 
     /**

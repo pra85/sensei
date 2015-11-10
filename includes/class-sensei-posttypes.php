@@ -60,6 +60,10 @@ class Sensei_PostTypes {
 		add_action( 'init', array( $this, 'setup_question_category_taxonomy' ), 100 );
 		add_action( 'init', array( $this, 'setup_lesson_tag_taxonomy' ), 100 );
 
+        // custom url routing
+        add_filter( 'post_type_link', array( $this, 'lesson_change_cpt_slug' ), 10, 3 );
+        add_filter( 'rewrite_rules_array', array( $this, 'lesson_fix_rewrite_rules' ) );
+
 		// Load Post Type Objects
 		$default_post_types = array( 'course' => 'Course', 'lesson' => 'Lesson', 'quiz' => 'Quiz', 'question' => 'Question', 'messages' => 'Messages' ) ;
 		$this->load_posttype_objects( $default_post_types );
@@ -198,23 +202,45 @@ class Sensei_PostTypes {
 
 
 		$supports_array = array( 'title', 'editor', 'excerpt', 'thumbnail', 'page-attributes' );
-		$allow_comments = false;
-		if ( isset( Sensei()->settings->settings[ 'lesson_comments' ] ) ) {
+
+        $allow_comments = false;
+        if ( isset( Sensei()->settings->settings[ 'lesson_comments' ] ) ) {
+
 			$allow_comments = Sensei()->settings->settings[ 'lesson_comments' ];
-		} // End If Statement
-		if ( $allow_comments ) {
-			array_push( $supports_array, 'comments' );
+
 		} // End If Statement
 
-		$args = array(
-		    'labels' => $this->create_post_type_labels( 'lesson', $this->labels['lesson']['singular'], $this->labels['lesson']['plural'], $this->labels['lesson']['menu'] ),
+        if ( $allow_comments ) {
+
+			array_push( $supports_array, 'comments' );
+
+		} // End If Statement
+
+        // rewrite base slug
+        $slug = esc_attr( apply_filters( 'sensei_lesson_slug', _x( 'lesson', 'post type single slug', 'woothemes-sensei' ) ) );
+        $permalinks = get_option( 'sensei_permalinks' );
+        if( ! empty( $permalinks ) ){
+
+            $slug = untrailingslashit( $permalinks['lesson'] );
+
+        }
+
+        $labels = $this->create_post_type_labels(
+            'lesson',
+            $this->labels['lesson']['singular'],
+            $this->labels['lesson']['plural'],
+            $this->labels['lesson']['menu']
+        );
+
+        $post_type_args = array(
+		    'labels' => $labels,
 		    'public' => true,
 		    'publicly_queryable' => true,
 		    'show_ui' => true,
 		    'show_in_menu' => true,
 		    'query_var' => true,
 		    'rewrite' => array(
-                'slug' => esc_attr( apply_filters( 'sensei_lesson_slug', _x( 'lesson', 'post type single slug', 'woothemes-sensei' ) ) ) ,
+                'slug' => $slug ,
                 'with_front' =>  true,
                 'feeds' => true,
                 'pages' => true
@@ -231,9 +257,9 @@ class Sensei_PostTypes {
          * Filter the arguments passed in when registering the Sensei Lesson post type.
          *
          * @since 1.9.0
-         * @param array $args
+         * @param array $post_type_args
          */
-		register_post_type( 'lesson', apply_filters( 'sensei_register_post_type_lesson', $args ) );
+		register_post_type( 'lesson', apply_filters( 'sensei_register_post_type_lesson', $post_type_args ) );
 
 	} // End setup_lesson_post_type()
 
@@ -784,6 +810,55 @@ class Sensei_PostTypes {
 			}
 		}
 	}
+
+    function lesson_change_cpt_slug( $post_link, $post, $leavename ) {
+
+        if ( 'lesson' != $post->post_type  || 'publish' != $post->post_status ){
+
+            return $post_link;
+
+        }
+
+        $permalinks = get_option( 'sensei_permalinks' );
+        if( strpos( $post_link, '%course-slug%' ) > 0 && '/%course-slug%/'==$permalinks['lesson'] ){
+
+            $course_id = Sensei()->lesson->get_course_id( $post->ID );
+            // for lessons with no course show lesson as slug
+            if( empty( $course_id ) || 'course' !=  get_post_type($course_id) ){
+
+                $post_link =  str_replace( '/%course-slug%/', '/lesson/', $post_link );
+
+            }else{
+
+                // replace the %course-slug% place holder with the lessons course slug
+                $course = get_post( $course_id );
+                $post_link = str_replace( '/%course-slug%/', '/'.$course->post_name.'/', $post_link );
+
+            }
+        }
+
+        return $post_link;
+    }
+
+    function lesson_fix_rewrite_rules( $rules ) {
+        global $wp_rewrite;
+
+        $permalinks        = get_option( 'sensei_permalinks' );
+        $lesson_permalink = empty( $permalinks['lesson'] ) ? _x( 'lesson', 'slug', 'woothemes-sensei' ) : $permalinks['lesson'];
+
+        // Fix the rewrite rules when the product permalink have %product_cat% flag
+        if ( preg_match( '`/(.+)(/%course-slug%)`' , $lesson_permalink, $rules ) ) {
+            foreach ( $rules as $rule => $rewrite ) {
+
+                if ( preg_match( '`^' . preg_quote( $matches[1], '`' ) . '/\(`', $rule ) && preg_match( '/^(index\.php\?course-slug)(?!(.*lesson))/', $rewrite ) ) {
+                    unset( $rules[ $rule ] );
+                }
+            }
+        }
+
+        return $rules;
+    }
+
 
 } // End Class
 
